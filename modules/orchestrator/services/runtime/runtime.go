@@ -442,6 +442,15 @@ func (r *Runtime) RedeployPipeline(operator user.ID, orgID uint64, runtimeID uin
 		logrus.Errorf(errstr)
 		return nil, err
 	}
+	cInfo, err := r.bdl.QueryClusterInfo(runtime.ClusterName)
+	if err != nil {
+		logrus.Errorf("get cluster info failed, cluster name: %s, error: %v", runtime.ClusterName, err)
+		return nil, err
+	}
+	jobCluster := cInfo.Get(apistructs.JOB_CLUSTER)
+	if jobCluster != "" {
+		runtime.ClusterName = jobCluster
+	}
 	dto, err := r.bdl.CreatePipeline(&apistructs.PipelineCreateRequestV2{
 		IdentityInfo: apistructs.IdentityInfo{UserID: operator.String()},
 		PipelineYml:  string(b),
